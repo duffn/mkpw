@@ -1,0 +1,164 @@
+package main
+
+import "core:crypto"
+import "core:encoding/base64"
+import "core:encoding/hex"
+import "core:flags"
+import "core:fmt"
+import "core:log"
+import "core:mem"
+import "core:os"
+import "core:strings"
+
+ALPHA :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+NUMBERS :: "0123456789"
+SYMBOLS :: "!@#$%^&*()-_=+[]{};:'\",.<>?/"
+
+Options :: struct {
+	length:     int `usage:"Length of the password to generate, default: 20."`,
+	quantity:   int `usage:"Number of passwords to generate, default: 1."`,
+	no_numbers: bool `usage:"Do not include numbers in the password."`,
+	no_symbols: bool `usage:"Do not include symbols in the password."`,
+	hex:        bool `usage:"Output the password in hexadecimal format. Note that this will double the length of the password."`,
+	base64:     bool `usage:"Output the password in base64 format. Note that this will increase the length of the password."`,
+}
+
+parse_and_validate_options :: proc(args: []string) -> Options {
+	opt: Options
+	style: flags.Parsing_Style = .Unix
+	flags.parse_or_exit(&opt, args, style)
+
+	if opt.hex && opt.base64 {
+		fmt.println(
+			"ERROR: Cannot output both hexadecimal and base64 encoded passwords. Choose either hex or base64.",
+		)
+		os.exit(1)
+	}
+
+	if opt.length <= 0 {
+		opt.length = 20
+	} else if opt.length > 1024 {
+		fmt.println("INFO: Password length is greater than 1024. Using 1024 as the maximum size.")
+		opt.length = 1024
+	}
+
+	if opt.quantity <= 0 {
+		opt.quantity = 1
+	} else if opt.quantity > 100 {
+		fmt.println("INFO: Quantity is greater than 100. Using 100.")
+		opt.quantity = 100
+	}
+
+	return opt
+}
+
+build_allowed_chars :: proc(no_numbers: bool, no_symbols: bool) -> string {
+	allowed_chars := strings.concatenate({ALPHA, NUMBERS, SYMBOLS})
+	defer delete(allowed_chars)
+
+	if no_numbers {
+		old := allowed_chars
+		new_string, removed_something := strings.remove(old, NUMBERS, -1)
+		if removed_something {
+			allowed_chars = new_string
+			delete(old)
+		}
+	}
+
+	if no_symbols {
+		old := allowed_chars
+		new_string, removed_something := strings.remove(old, SYMBOLS, -1)
+		if removed_something {
+			allowed_chars = new_string
+			delete(old)
+		}
+	}
+
+	return strings.clone(allowed_chars)
+}
+
+generate_password :: proc(allowed_chars: string, length: int, generate_hex: bool, generate_base64: bool) -> string {
+	random_bytes := make([]u8, length)
+	defer delete(random_bytes)
+
+	crypto.rand_bytes(random_bytes)
+
+	alphabet_len := len(allowed_chars)
+
+	result_chars := make([]u8, length)
+	defer delete(result_chars)
+	for j in 0 ..< length {
+		idx := random_bytes[j] % u8(alphabet_len)
+		result_chars[j] = allowed_chars[idx]
+	}
+
+	result := string(result_chars)
+
+	if generate_hex {
+		result = string(hex.encode(result_chars, context.temp_allocator))
+	}
+
+	if generate_base64 {
+		result = string(base64.encode(result_chars, base64.ENC_TABLE, context.temp_allocator))
+	}
+
+	return strings.clone(result)
+}
+
+main :: proc() {
+	when ODIN_DEBUG {
+		track: mem.Tracking_Allocator
+		mem.tracking_allocator_init(&track, context.allocator)
+		context.allocator = mem.tracking_allocator(&track)
+
+		defer {
+			if len(track.allocation_map) > 0 {
+				fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				for _, entry in track.allocation_map {
+					fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+				}
+			}
+			if len(track.bad_free_array) > 0 {
+				fmt.eprintf("=== %v incorrect frees: ===\n", len(track.bad_free_array))
+				for entry in track.bad_free_array {
+					fmt.eprintf("- %p @ %v\n", entry.memory, entry.location)
+				}
+			}
+			mem.tracking_allocator_destroy(&track)
+		}
+	}
+
+	context.random_generator = crypto.random_generator()
+	context.logger = log.create_console_logger()
+	defer log.destroy_console_logger(context.logger)
+	if ODIN_DEBUG {
+		context.logger.lowest_level = .Debug
+	}
+
+	opt := parse_and_validate_options(os.args)
+	if ODIN_DEBUG {
+		log.debugf("%#v", opt)
+	}
+
+	if !crypto.HAS_RAND_BYTES {
+		fmt.println(
+			"ERROR: secure random bytes are not available on this platform. Refusing to generate an insecure password.",
+		)
+		os.exit(1)
+	}
+
+	allowed_chars := build_allowed_chars(opt.no_numbers, opt.no_symbols)
+	defer delete(allowed_chars)
+
+	if opt.length < 16 {
+		fmt.println("WARN: Password length is less than 16 characters. You should consider a longer password.")
+	}
+
+	for _ in 0 ..< opt.quantity {
+		pass := generate_password(allowed_chars, opt.length, opt.hex, opt.base64)
+		fmt.println(pass)
+		delete(pass)
+	}
+
+	free_all(context.temp_allocator)
+}

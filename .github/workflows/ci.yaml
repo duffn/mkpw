@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # This is a matrix as we can include macOS or Windows builds as well,
+          # however, they use up a lot of extra minutes on GitHub Actions, and nobody
+          # is going to use this project, so won't be paying extra for those.
+          # We'll still build the binaries in the `release` workflow though and
+          # hopefully those will work.
+          - os: ubuntu-latest
+            artifact_name: mkpw
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
+
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev-2025-01
+
+      - name: Run tests
+        shell: bash
+        run: odin test tests
+
+      - name: Build
+        shell: bash
+        run: |
+          odin build main -out:${{ matrix.artifact_name }}
+          ./${{ matrix.artifact_name }} --help

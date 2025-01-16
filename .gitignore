@@ -1,0 +1,4 @@
+mkpw
+mkpw.*/**/
+main.*/**/
+*.bin

@@ -1,0 +1,71 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: mkpw
+            asset_name: mkpw-linux-amd64.tar.gz
+            asset_directory: /tmp/
+          - os: windows-latest
+            artifact_name: mkpw.exe
+            asset_name: mkpw-windows-amd64.zip
+            asset_directory: D:\tmp\
+          - os: macos-latest
+            artifact_name: mkpw
+            asset_name: mkpw-macos-arm64.tar.gz
+            asset_directory: /tmp/
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: write
+
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev-2025-01
+
+      - name: Run tests
+        shell: bash
+        run: odin test tests
+
+      - name: Build
+        shell: bash
+        run: |
+          odin build main -out:${{ matrix.artifact_name }}
+          ./${{ matrix.artifact_name }} --help
+
+      - name: Compress binary
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            # I don't understand Windows, but this seems to work.
+            7z a ${{ matrix.asset_name }} ${{ matrix.artifact_name }}
+            mkdir -p D:\\tmp
+            cp ${{ matrix.asset_name }} D:\\tmp\\${{ matrix.asset_name }}
+          else
+            tar -czf /tmp/${{ matrix.asset_name }} ${{ matrix.artifact_name }}
+          fi
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.asset_directory}}${{ matrix.asset_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
