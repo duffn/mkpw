@@ -33,6 +33,14 @@ odin build main -out:mkpw.exe
 - Download your platform's binary from the most current [release](https://github.com/duffn/mkpw/releases).
 - Note that on macOS, you'll be informed that the binary cannot be run because it cannot be verified. You can [allow the binary to be run](https://apple.stackexchange.com/questions/436674/how-to-unblock-binary-from-use-because-mac-says-it-is-not-from-identified-develo) anyway, or if that makes you uncomfortable, you can build the application from source.
 
+### Homebrew
+
+If you are on macOS or Linux and use [Homebrew](https://brew.sh), you can install from the [repository's custom tap](https://github.com/duffn/homebrew-mkpw).
+
+```bash
+brew install duffn/mkpw/mkpw
+```
+
 ### Web
 
 You can also build and run this in the browser.
