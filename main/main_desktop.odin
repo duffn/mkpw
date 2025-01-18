@@ -7,6 +7,9 @@ import "core:fmt"
 import "core:log"
 import "core:mem"
 import "core:os"
+import "core:os/os2"
+
+VERSION :: "v0.2.0"
 
 Options :: struct {
 	length:     int `usage:"Length of the password to generate, default: 20."`,
@@ -15,12 +18,25 @@ Options :: struct {
 	no_symbols: bool `usage:"Do not include symbols in the password."`,
 	hex:        bool `usage:"Output the password in hexadecimal format. Note that this will double the length of the password."`,
 	base64:     bool `usage:"Output the password in base64 format. Note that this will increase the length of the password."`,
+	version:    bool `usage:"Print the version and exit."`,
 }
 
 parse_and_validate_options :: proc(args: []string) -> Options {
 	opt: Options
 	style: flags.Parsing_Style = .Unix
 	flags.parse_or_exit(&opt, args, style)
+
+	if opt.version {
+		fmt.printfln("mkpw %s", VERSION)
+		_, stdout, _, err := os2.process_exec(
+			{command = {"git", "rev-parse", "--short", "HEAD"}},
+			context.temp_allocator,
+		)
+		if err == nil {
+			fmt.printf("commit %s", stdout)
+		}
+		os.exit(0)
+	}
 
 	if opt.hex && opt.base64 {
 		fmt.println(
