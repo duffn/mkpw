@@ -2616,7 +2616,7 @@
       exports._end();
     }
 
-    return exports;
+    return;
   }
 
   window.odin = {

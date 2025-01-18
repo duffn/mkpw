@@ -4,7 +4,8 @@ const memInterface = new odin.WasmMemoryInterface();
 let odinExports = null;
 
 (async () => {
-  odinExports = await odin.runWasm("index.wasm", null, null, memInterface);
+  await odin.runWasm("index.wasm", null, null, memInterface);
+  odinExports = memInterface.exports;
 
   const button = document.getElementById("generate-button");
   const length = document.getElementById("length-range");
@@ -80,3 +81,4 @@ function generatePassword(noNumbers, noSymbols, selectedPasswordFormat) {
 
   output.innerText = memInterface.loadString(password, resultLength);
 }
+
