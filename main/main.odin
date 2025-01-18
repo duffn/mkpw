@@ -3,6 +3,7 @@ package main
 import "core:crypto"
 import "core:encoding/base64"
 import "core:encoding/hex"
+import "core:fmt"
 import "core:strings"
 
 ALPHA :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -40,6 +41,14 @@ generate_password :: proc(allowed_chars: string, length: int, generate_hex: bool
 
 	crypto.rand_bytes(random_bytes)
 
+	if generate_hex {
+		return strings.clone(string(hex.encode(random_bytes, context.temp_allocator)))
+	}
+
+	if generate_base64 {
+		return strings.clone(string(base64.encode(random_bytes, base64.ENC_TABLE, context.temp_allocator)))
+	}
+
 	alphabet_len := len(allowed_chars)
 
 	result_chars := make([]u8, length)
@@ -50,14 +59,6 @@ generate_password :: proc(allowed_chars: string, length: int, generate_hex: bool
 	}
 
 	result := string(result_chars)
-
-	if generate_hex {
-		result = string(hex.encode(result_chars, context.temp_allocator))
-	}
-
-	if generate_base64 {
-		result = string(base64.encode(result_chars, base64.ENC_TABLE, context.temp_allocator))
-	}
 
 	return strings.clone(result)
 }
