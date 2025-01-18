@@ -9,7 +9,7 @@ import "core:mem"
 import "core:os"
 import "core:os/os2"
 
-VERSION :: "v0.2.0"
+VERSION :: "v0.3.0"
 
 Options :: struct {
 	length:     int `usage:"Length of the password to generate, default: 20."`,
