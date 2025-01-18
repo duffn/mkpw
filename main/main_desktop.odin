@@ -10,6 +10,7 @@ import "core:os"
 import "core:os/os2"
 
 VERSION :: "v0.3.0"
+LOG_LEVEL :: log.Level.Debug when ODIN_DEBUG else log.Level.Info
 
 Options :: struct {
 	length:     int `usage:"Length of the password to generate, default: 20."`,
@@ -85,15 +86,11 @@ main :: proc() {
 
 	context.random_generator = crypto.random_generator()
 	context.logger = log.create_console_logger()
+	context.logger.lowest_level = LOG_LEVEL
 	defer log.destroy_console_logger(context.logger)
-	if ODIN_DEBUG {
-		context.logger.lowest_level = .Debug
-	}
 
 	opt := parse_and_validate_options(os.args)
-	if ODIN_DEBUG {
-		log.debugf("%#v", opt)
-	}
+	log.debugf("%#v", opt)
 
 	if !crypto.HAS_RAND_BYTES {
 		fmt.println(
