@@ -7,7 +7,6 @@ import "core:fmt"
 import "core:log"
 import "core:mem"
 import "core:os"
-import "core:os/os2"
 
 VERSION :: "v0.3.1"
 LOG_LEVEL :: log.Level.Debug when ODIN_DEBUG else log.Level.Info
@@ -29,13 +28,6 @@ parse_and_validate_options :: proc(args: []string) -> Options {
 
 	if opt.version {
 		fmt.printfln("mkpw %s", VERSION)
-		_, stdout, _, err := os2.process_exec(
-			{command = {"git", "rev-parse", "--short", "HEAD"}},
-			context.temp_allocator,
-		)
-		if err == nil {
-			fmt.printf("commit %s", stdout)
-		}
 		os.exit(0)
 	}
 
