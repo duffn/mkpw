@@ -22,6 +22,7 @@ generate_password_web :: proc(
 	no_symbols: bool,
 	generate_hex: bool,
 	generate_base64: bool,
+	generate_base64_urlsafe: bool,
 ) -> cstring {
 	context = default_context()
 
@@ -47,12 +48,18 @@ generate_password_web :: proc(
 	allowed_chars := build_allowed_chars(no_numbers, no_symbols)
 	defer delete(allowed_chars)
 
-	if generate_hex && generate_base64 {
+	if generate_hex && (generate_base64 || generate_base64_urlsafe) {
 		fmt.println("ERROR: cannot generate a password that is both hex and base64.")
 		return "ERROR: cannot generate a password that is both hex and base64."
 	}
 
-	password := generate_password(allowed_chars, generate_length, generate_hex, generate_base64)
+	password := generate_password(
+		allowed_chars,
+		generate_length,
+		generate_hex,
+		generate_base64,
+		generate_base64_urlsafe,
+	)
 	defer delete(password)
 
 	return strings.clone_to_cstring(password)

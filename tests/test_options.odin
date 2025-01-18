@@ -45,3 +45,11 @@ test_parse_and_validate_options_quantity_too_large :: proc(t: ^testing.T) {
 	opt := main.parse_and_validate_options(args)
 	testing.expect(t, opt.quantity == 100, "Expected quantity to be capped at 100.")
 }
+
+@(test)
+test_parse_and_validate_options_base64 :: proc(t: ^testing.T) {
+	args := []string{"prog", "--base64", "--base64-urlsafe"}
+	opt := main.parse_and_validate_options(args)
+	testing.expect(t, opt.base64_urlsafe, "Expected base64_urlsafe to be true.")
+	testing.expect(t, !opt.base64, "Expected base64 to be false when base64_urlsafe is true.")
+}

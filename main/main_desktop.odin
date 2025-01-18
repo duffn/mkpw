@@ -8,17 +8,18 @@ import "core:log"
 import "core:mem"
 import "core:os"
 
-VERSION :: "v0.3.1"
+VERSION :: "v0.4.0"
 LOG_LEVEL :: log.Level.Debug when ODIN_DEBUG else log.Level.Info
 
 Options :: struct {
-	length:     int `usage:"Length of the password to generate, default: 20."`,
-	quantity:   int `usage:"Number of passwords to generate, default: 1."`,
-	no_numbers: bool `usage:"Do not include numbers in the password."`,
-	no_symbols: bool `usage:"Do not include symbols in the password."`,
-	hex:        bool `usage:"Output the password in hexadecimal format. Note that this will double the length of the password."`,
-	base64:     bool `usage:"Output the password in base64 format. Note that this will increase the length of the password."`,
-	version:    bool `usage:"Print the version and exit."`,
+	length:         int `usage:"Length of the password to generate, default: 20."`,
+	quantity:       int `usage:"Number of passwords to generate, default: 1."`,
+	no_numbers:     bool `usage:"Do not include numbers in the password."`,
+	no_symbols:     bool `usage:"Do not include symbols in the password."`,
+	hex:            bool `usage:"Output the password in hexadecimal format. Note that this will double the length of the password."`,
+	base64:         bool `usage:"Output the password in base64 format. Note that this will increase the length of the password."`,
+	base64_urlsafe: bool `usage:"Output the password in base64 format that is URL safe. Note that this will increase the length of the password."`,
+	version:        bool `usage:"Print the version and exit."`,
 }
 
 parse_and_validate_options :: proc(args: []string) -> Options {
@@ -31,9 +32,14 @@ parse_and_validate_options :: proc(args: []string) -> Options {
 		os.exit(0)
 	}
 
-	if opt.hex && opt.base64 {
+	if opt.hex && (opt.base64 || opt.base64_urlsafe) {
 		fmt.println("ERROR: Cannot output both hex and base64 encoded passwords. Choose either hex or base64.")
 		os.exit(1)
+	}
+
+	if opt.base64_urlsafe && opt.base64 {
+		fmt.println("WARN: Selected both base64 && base64-urlsafe. Defaulting to base64-urlsafe.")
+		opt.base64 = false
 	}
 
 	if opt.length <= 0 {
@@ -106,7 +112,7 @@ main :: proc() {
 	}
 	log.debugf("Password result length is %d", output_length)
 	for _ in 0 ..< opt.quantity {
-		pass := generate_password(allowed_chars, opt.length, opt.hex, opt.base64)
+		pass := generate_password(allowed_chars, opt.length, opt.hex, opt.base64, opt.base64_urlsafe)
 		fmt.println(pass)
 		delete(pass)
 	}

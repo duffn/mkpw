@@ -62,6 +62,8 @@
 			<fieldset class="mt-8">
 				<legend class="sr-only">Options</legend>
 				<p class="mt-1 text-sm/6 text-gray-600">Password settings</p>
+				<p class="mt-1 text-xs text-gray-400">* These only affect the Standard password format.
+				</p>
 				<div class="mt-4 space-y-5">
 					<div class="flex gap-3">
 						<div class="flex h-6 shrink-0 items-center">
@@ -127,7 +129,7 @@
 				</div>
 			</fieldset>
 			<fieldset>
-				<p class="mt-8 text-sm/6 text-gray-600">What format do you want your password?</p>
+				<p class="mt-8 text-sm/6 text-gray-600">Password format</p>
 				<div class="mt-4 space-y-6 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
 					<div class="flex items-center">
 						<input id="standard" name="password-format" type="radio" checked
@@ -148,6 +150,14 @@
 							class="ml-3 block text-sm/6 font-medium text-gray-900">Base64
 						</label>
 					</div>
+					<div class="flex items-center">
+						<input id="base64-urlsafe" name="password-format" type="radio"
+							class="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden [&:not(:checked)]:before:hidden">
+						<label for="base64-urlsafe"
+							class="ml-3 block text-sm/6 font-medium text-gray-900">Base64
+							URL Safe
+						</label>
+					</div>
 				</div>
 			</fieldset>
 			<div class="mt-10 flex items-center justify-center gap-x-6">
@@ -157,10 +167,10 @@
 			</div>
 		</div>
 		<p class="mt-10 text-center text-sm/6 text-gray-600">
-			<a class="mr-10" href="https://github.com/duffn/mkpw">About</a> -
-			<a class="mr-10" href="https://github.com/duffn/mkpw?tab=readme-ov-file#is-this-secure">Is this
+			<a href="https://github.com/duffn/mkpw">About</a> -
+			<a href="https://github.com/duffn/mkpw?tab=readme-ov-file#is-this-secure">Is this
 				secure?</a> -
-			<a class="mr-10" href="https://github.com/duffn/mkpw">Contribute</a>
+			<a href="https://github.com/duffn/mkpw">Contribute</a>
 		</p>
 	</section>
 
