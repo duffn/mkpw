@@ -42,6 +42,8 @@ let odinExports = null;
         selectedPasswordFormat = "hex";
       } else if (format.id === "base64") {
         selectedPasswordFormat = "base64";
+      } else if (format.id === "base64-urlsafe") {
+        selectedPasswordFormat = "base64-urlsafe";
       } else {
         selectedPasswordFormat = "standard";
       }
@@ -56,6 +58,7 @@ let odinExports = null;
 function generatePassword(noNumbers, noSymbols, selectedPasswordFormat) {
   let generateHex = false;
   let generateBase64 = false;
+  let generateBase64UrlSafe = false;
   const output = document.getElementById("password");
   const length = document.getElementById("length-range");
 
@@ -67,6 +70,9 @@ function generatePassword(noNumbers, noSymbols, selectedPasswordFormat) {
   } else if (selectedPasswordFormat === "base64") {
     resultLength = ((4 * parsedLength) / 3 + 3) & ~3;
     generateBase64 = true;
+  } else if (selectedPasswordFormat === "base64-urlsafe") {
+    resultLength = calculateBase64UrlSafeLength(parsedLength);
+    generateBase64UrlSafe = true;
   } else {
     resultLength = parsedLength;
   }
@@ -77,8 +83,19 @@ function generatePassword(noNumbers, noSymbols, selectedPasswordFormat) {
     noSymbols,
     generateHex,
     generateBase64,
+    generateBase64UrlSafe,
   );
 
   output.innerText = memInterface.loadString(password, resultLength);
 }
 
+function calculateBase64UrlSafeLength(length) {
+  let padding = 0;
+  switch (length % 3) {
+    case 1:
+      padding = 2;
+    case 2:
+      padding = 1;
+  }
+  return (((4 * length) / 3 + 3) & ~3) - padding;
+}

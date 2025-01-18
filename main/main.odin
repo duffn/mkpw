@@ -3,7 +3,6 @@ package main
 import "core:crypto"
 import "core:encoding/base64"
 import "core:encoding/hex"
-import "core:fmt"
 import "core:strings"
 
 ALPHA :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -35,7 +34,13 @@ build_allowed_chars :: proc(no_numbers: bool, no_symbols: bool) -> string {
 	return strings.clone(allowed_chars)
 }
 
-generate_password :: proc(allowed_chars: string, length: int, generate_hex: bool, generate_base64: bool) -> string {
+generate_password :: proc(
+	allowed_chars: string,
+	length: int,
+	generate_hex: bool,
+	generate_base64: bool,
+	generate_base64_urlsafe: bool,
+) -> string {
 	random_bytes := make([]u8, length)
 	defer delete(random_bytes)
 
@@ -43,6 +48,16 @@ generate_password :: proc(allowed_chars: string, length: int, generate_hex: bool
 
 	if generate_hex {
 		return strings.clone(string(hex.encode(random_bytes, context.temp_allocator)))
+	}
+
+	if generate_base64_urlsafe {
+		base64 := string(base64.encode(random_bytes, base64.ENC_TABLE, context.temp_allocator))
+		base64, _ = strings.replace_all(base64, "+", "-", context.temp_allocator)
+		base64, _ = strings.replace_all(base64, "/", "_", context.temp_allocator)
+		for strings.ends_with(base64, "=") {
+			base64 = strings.trim_suffix(base64, "=")
+		}
+		return strings.clone(base64)
 	}
 
 	if generate_base64 {
