@@ -9,7 +9,7 @@ import "core:mem"
 import "core:os"
 import "core:os/os2"
 
-VERSION :: "v0.3.0"
+VERSION :: "v0.3.1"
 LOG_LEVEL :: log.Level.Debug when ODIN_DEBUG else log.Level.Info
 
 Options :: struct {
