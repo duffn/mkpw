@@ -39,9 +39,7 @@ parse_and_validate_options :: proc(args: []string) -> Options {
 	}
 
 	if opt.hex && opt.base64 {
-		fmt.println(
-			"ERROR: Cannot output both hexadecimal and base64 encoded passwords. Choose either hex or base64.",
-		)
+		fmt.println("ERROR: Cannot output both hex and base64 encoded passwords. Choose either hex or base64.")
 		os.exit(1)
 	}
 
@@ -107,10 +105,17 @@ main :: proc() {
 	allowed_chars := build_allowed_chars(opt.no_numbers, opt.no_symbols)
 	defer delete(allowed_chars)
 
-	if opt.length < 16 {
+	output_length := opt.length
+	if opt.hex {
+		output_length *= 2
+	} else if opt.base64 {
+		bit := 3
+		output_length = ((4 * output_length) / 3 + 3) & ~bit
+	}
+	if output_length < 16 {
 		fmt.println("WARN: Password length is less than 16 characters. You should consider a longer password.")
 	}
-
+	log.debugf("Password result length is %d", output_length)
 	for _ in 0 ..< opt.quantity {
 		pass := generate_password(allowed_chars, opt.length, opt.hex, opt.base64)
 		fmt.println(pass)
