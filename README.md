@@ -19,13 +19,13 @@ Recommended.
 #### macOS & Linux
 
 ```bash
-odin build main -out:mkpw
+odin build main -out:mkpw -vet -strict-style -vet-tabs -disallow-do -warnings-as-errors
 ```
 
 #### Windows
 
 ```bash
-odin build main -out:mkpw.exe
+odin build main -out:mkpw.exe -vet -strict-style -vet-tabs -disallow-do -warnings-as-errors
 ```
 
 ### Binaries
@@ -48,7 +48,7 @@ You can also build and run this in the browser.
 - Build for the web.
 
 ```bash
-odin build main -target:js_wasm32 -out:web/index.wasm
+odin build main -target:js_wasm32 -out:web/index.wasm -vet -strict-style -vet-tabs -disallow-do -warnings-as-errors
 ```
 
 - If you are going to update the CSS, you need to [install the Tailwind CSS CLI](https://tailwindcss.com/blog/standalone-cli) and compile the CSS.

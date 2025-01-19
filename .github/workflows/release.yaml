@@ -47,8 +47,8 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          odin build main -out:${{ matrix.artifact_name }}
-          ./${{ matrix.artifact_name }} --help
+          odin build main -out:${{ matrix.artifact_name }} -vet -strict-style -vet-tabs -disallow-do -warnings-as-errors
+          ./${{ matrix.artifact_name }} --version
 
       - name: Compress binary
         shell: bash
