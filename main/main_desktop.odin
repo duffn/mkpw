@@ -8,6 +8,8 @@ import "core:log"
 import "core:mem"
 import "core:os"
 
+_ :: mem
+
 VERSION :: "v0.4.0"
 LOG_LEVEL :: log.Level.Debug when ODIN_DEBUG else log.Level.Info
 
