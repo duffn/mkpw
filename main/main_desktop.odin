@@ -84,7 +84,6 @@ main :: proc() {
 		}
 	}
 
-	context.random_generator = crypto.random_generator()
 	context.logger = log.create_console_logger()
 	context.logger.lowest_level = LOG_LEVEL
 	defer log.destroy_console_logger(context.logger)
